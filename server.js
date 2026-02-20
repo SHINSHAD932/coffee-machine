@@ -6,25 +6,46 @@ app.use(cors());
 
 let paymentStatus = false;
 
-// Home page with automatic QR
+/* ===============================
+   HOME PAGE
+=================================*/
 app.get("/", (req, res) => {
+    const baseUrl = `https://${req.headers.host}`;
+
     res.send(`
-        <h1>☕ Automatic Coffee Machine</h1>
-        <h2>Price: ₹20</h2>
-        <p>Scan QR to Pay</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://${req.hostname}:3000/pay" />
-        <br><br>
-        <p>Waiting for Payment...</p>
+        <html>
+        <head>
+            <title>Automatic Coffee Machine</title>
+        </head>
+        <body style="text-align:center;font-family:Arial;">
+            <h1>☕ Automatic Coffee Machine</h1>
+            <h2>Price: ₹20</h2>
+            <p>Scan QR to Pay</p>
+
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${baseUrl}/pay" />
+
+            <br><br>
+            <p>Waiting for Payment...</p>
+        </body>
+        </html>
     `);
 });
 
-// When QR is scanned
+/* ===============================
+   PAYMENT ROUTE (SIMULATION)
+=================================*/
 app.get("/pay", (req, res) => {
     paymentStatus = true;
-    res.send("<h1>✅ Payment Successful! Coffee Dispensing...</h1>");
+
+    res.send(`
+        <h1 style="text-align:center;">✅ Payment Successful!</h1>
+        <h2 style="text-align:center;">☕ Coffee Dispensing...</h2>
+    `);
 });
 
-// ESP32 checks this route
+/* ===============================
+   ESP32 CHECK ROUTE
+=================================*/
 app.get("/payment-status", (req, res) => {
     if (paymentStatus) {
         res.send("PAID");
@@ -33,12 +54,19 @@ app.get("/payment-status", (req, res) => {
     }
 });
 
-// Reset after coffee given
+/* ===============================
+   RESET ROUTE
+=================================*/
 app.get("/reset", (req, res) => {
     paymentStatus = false;
     res.send("RESET_DONE");
 });
 
-app.listen(3000, () => {
-    console.log("☕ Coffee Server running on http://localhost:3000");
+/* ===============================
+   RENDER PORT FIX
+=================================*/
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("☕ Coffee Server running on port " + PORT);
 });
